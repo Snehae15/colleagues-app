@@ -3,7 +3,6 @@ import 'package:college_app/Screens/student/AddPhoto.dart';
 import 'package:college_app/constants/colors.dart';
 import 'package:college_app/widgets/AppText.dart';
 import 'package:college_app/widgets/EventCard.dart';
-import 'package:college_app/widgets/StudentTile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -23,14 +22,16 @@ class DetailsPhoto extends StatelessWidget {
       future: fetchEventDetails(),
       builder: (context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else {
           Map<String, dynamic>? eventDetails = snapshot.data;
-
           if (eventDetails == null) {
-            // Handle case where eventDetails is null
             return Text('Event details not available');
           }
 
@@ -97,6 +98,8 @@ class DetailsPhoto extends StatelessWidget {
                           participants: List<String>.from(
                               eventDetails['participants'] ?? []),
                           hostId: '',
+                          teacherId:
+                              'teacherId', // Adjust the value of teacherId
                         ),
                         PhotoList(),
                       ],
@@ -136,8 +139,9 @@ class PrevDetails extends StatelessWidget {
   final String date;
   final String time;
   final String location;
-  final String hostId; // Change to hostId
   final List<String> participants;
+  final String hostId;
+  final String teacherId; // Add this line
 
   const PrevDetails({
     Key? key,
@@ -146,13 +150,14 @@ class PrevDetails extends StatelessWidget {
     required this.date,
     required this.time,
     required this.location,
-    required this.hostId,
     required this.participants,
+    required this.hostId,
+    required this.teacherId, // Add this line
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    print('HostId: $hostId');
+    print('Fetching and displaying details...');
 
     return Scaffold(
       body: Padding(
@@ -165,48 +170,36 @@ class PrevDetails extends StatelessWidget {
               date: date,
               time: time,
               location: location,
-              host: hostId, // Change to hostId
+              host: 'Host not assigned', // Default value
               mode: true,
               eventId: eventId,
             ),
             Padding(
-              padding: EdgeInsets.symmetric(vertical: 20.h),
-              child: AppText(
-                text: 'Participants',
-                size: 15,
-                fontWeight: FontWeight.w500,
-                color: customBlack,
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Text(
+                'Participants',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black,
+                ),
               ),
             ),
             Expanded(
               child: FutureBuilder(
-                future: fetchHostDetails(), // Fetch host details
-                builder: (context, AsyncSnapshot<String> snapshot) {
+                future: fetchAndDisplayParticipantsDetails(),
+                builder: (context, AsyncSnapshot<void> snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return CircularProgressIndicator();
                   } else if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else {
-                    String hostName = snapshot.data ?? 'No name';
-
                     return ListView.builder(
                       itemBuilder: (context, index) {
                         String name = participants[index] ?? 'No name';
 
-                        // Check if the hostId matches the teacherId
-                        String teacherId = 'teacherId';
-                        if (hostId == teacherId) {
-                          print(
-                              'Host is a teacher with the following name: $name');
-                        }
-
-                        return StudentTile(
-                          name: name,
-                          department: 'Department',
-                          click: () {},
-                          eventId: eventId,
-                          img: '',
-                          studentId: 'studentId',
+                        return ListTile(
+                          title: Text(name),
                         );
                       },
                       itemCount: participants.length,
@@ -221,21 +214,97 @@ class PrevDetails extends StatelessWidget {
     );
   }
 
-  Future<String> fetchHostDetails() async {
+  Future<void> fetchAndDisplayParticipantsDetails() async {
     try {
-      DocumentSnapshot<Map<String, dynamic>> hostSnapshot =
+      DocumentSnapshot<Map<String, dynamic>> eventSnapshot =
           await FirebaseFirestore.instance
-              .collection('teachers')
-              .doc(hostId)
+              .collection('events')
+              .doc(eventId)
               .get();
 
-      if (hostSnapshot.exists) {
-        return hostSnapshot.data()?['name'] ?? 'No name';
+      if (eventSnapshot.exists) {
+        String eventHostId = eventSnapshot.data()?['hostId'] ?? '';
+        String teacherId = 'teacherId';
+
+        if (eventHostId == teacherId) {
+          await fetchAndDisplayHostDetails(eventId);
+        }
+
+        await fetchAndDisplayParticipants(eventSnapshot);
       } else {
-        throw Exception('Host not found');
+        throw Exception('Event not found');
       }
     } catch (e) {
-      throw Exception('Error fetching host details: $e');
+      print('Error fetching and displaying details: $e');
+    }
+  }
+
+  Future<void> fetchAndDisplayHostDetails(String eventId) async {
+    try {
+      QuerySnapshot<Map<String, dynamic>> requestsSnapshot =
+          await FirebaseFirestore.instance
+              .collection('EventRequests')
+              .where('eventId', isEqualTo: eventId)
+              .get();
+
+      String hostId = '';
+
+      for (QueryDocumentSnapshot<Map<String, dynamic>> request
+          in requestsSnapshot.docs) {
+        String requestId = request.id;
+        String requestTeacherId = request.data()?['teacherId'] ?? '';
+
+        if (requestTeacherId == teacherId) {
+          hostId = requestTeacherId;
+          break;
+        }
+      }
+
+      if (hostId.isNotEmpty) {
+        DocumentSnapshot<Map<String, dynamic>> teacherSnapshot =
+            await FirebaseFirestore.instance
+                .collection('teachers')
+                .doc(hostId)
+                .get();
+
+        if (teacherSnapshot.exists) {
+          print(
+              'Host is a teacher with the following name: ${teacherSnapshot.data()?['name'] ?? 'No name'}');
+        }
+      } else {
+        print('No host found for this event');
+      }
+    } catch (e) {
+      print('Error fetching and displaying host details: $e');
+    }
+  }
+
+  Future<void> fetchAndDisplayParticipants(
+      DocumentSnapshot<Map<String, dynamic>> eventSnapshot) async {
+    try {
+      List<String> studentIds =
+          List<String>.from(eventSnapshot.data()?['participants'] ?? []);
+
+      List<Map<String, dynamic>> participantsDetails = [];
+
+      for (String studentId in studentIds) {
+        DocumentSnapshot<Map<String, dynamic>> studentSnapshot =
+            await FirebaseFirestore.instance
+                .collection('students')
+                .doc(studentId)
+                .get();
+
+        if (studentSnapshot.exists) {
+          participantsDetails.add(studentSnapshot.data() ?? {});
+        }
+      }
+
+      participantsDetails.forEach((participant) {
+        print('Name: ${participant['name']}');
+        print('Department: ${participant['department']}');
+      });
+    } catch (e) {
+      print('Error fetching and displaying participant details: $e');
     }
   }
 }
@@ -275,7 +344,9 @@ class PhotoList extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => AddPhoto(),
+                      builder: (context) => AddPhoto(
+                        eventId: 'eventId',
+                      ),
                     ),
                   );
                 },

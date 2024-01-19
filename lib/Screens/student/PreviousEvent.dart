@@ -12,6 +12,7 @@ class PreviousEvent extends StatelessWidget {
       future: fetchEventRequests(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
+          // Display a loading indicator while data is being fetched
           return Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
@@ -55,6 +56,7 @@ class PreviousEvent extends StatelessWidget {
         .collection('EventRequests')
         .where('date', isLessThan: currentDate.toString())
         // .where('student', isEqualTo: true)
+        // .where('status', isEqualTo: 'accept')
         .get();
   }
 }

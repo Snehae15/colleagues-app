@@ -12,7 +12,7 @@ class LandingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 74, 95, 235),
+        backgroundColor: Color(0xff4472B2),
         actions: [
           TextButton(
             onPressed: () {
@@ -38,11 +38,19 @@ class LandingPage extends StatelessWidget {
             return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 100.0),
+                    child: SizedBox(
+                      width: screenWidth * 0.8,
+                      height: screenWidth * 0.8,
+                      child: Image.asset('assets/logo.jpeg'),
+                    ),
+                  ),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       const Padding(
-                        padding: EdgeInsets.only(top: 250.0),
+                        padding: EdgeInsets.all(10.0),
                         child: Text(
                           'Welcome',
                           style: TextStyle(
@@ -77,8 +85,8 @@ class LandingPage extends StatelessWidget {
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
                                   colors: [
-                                    Color.fromARGB(255, 74, 95, 235),
-                                    Color.fromARGB(255, 74, 95, 235),
+                                    Color(0xff4472B2),
+                                    Color(0xff4472B2),
                                   ],
                                   begin: Alignment.centerLeft,
                                   end: Alignment.centerRight,
@@ -120,8 +128,8 @@ class LandingPage extends StatelessWidget {
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
                                   colors: [
-                                    Color.fromARGB(255, 74, 95, 235),
-                                    Color.fromARGB(255, 74, 95, 235),
+                                    Color(0xff4472B2),
+                                    Color(0xff4472B2),
                                   ],
                                   begin: Alignment.centerLeft,
                                   end: Alignment.centerRight,
