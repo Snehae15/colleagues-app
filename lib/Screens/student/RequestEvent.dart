@@ -158,7 +158,7 @@ class _RequestEventState extends State<RequestEvent> {
                 click: () {},
                 studentId: studentId,
                 eventId: widget.eventId,
-                img: '',
+                status: '',
               ),
               SizedBox(
                 height: 20.h,

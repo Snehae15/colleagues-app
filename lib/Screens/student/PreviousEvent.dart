@@ -52,10 +52,12 @@ class PreviousEvent extends StatelessWidget {
 
   Future<QuerySnapshot> fetchEventRequests() async {
     DateTime currentDate = DateTime.now();
+    DateTime currentDateTime = DateTime.now();
     return FirebaseFirestore.instance
         .collection('EventRequests')
         .where('date', isLessThan: currentDate.toString())
-        // .where('student', isEqualTo: true)
+        // .where('time', isLessThan: currentDateTime.toString())
+        // // .where('student', isEqualTo: true)
         // .where('status', isEqualTo: 'accept')
         .get();
   }

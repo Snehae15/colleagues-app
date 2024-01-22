@@ -28,12 +28,12 @@ class _StudentProfileState extends State<StudentProfile> {
   void initState() {
     super.initState();
     _fetchStudentId();
-    _fetchStudentData();
   }
 
   Future<void> _fetchStudentId() async {
     _prefs = await SharedPreferences.getInstance();
     _studentId = _prefs.getString('studentId') ?? '';
+    _fetchStudentData(); // Call _fetchStudentData here
     setState(() {});
   }
 
@@ -46,6 +46,7 @@ class _StudentProfileState extends State<StudentProfile> {
               .get();
 
       if (studentSnapshot.exists) {
+        print("Student data fetched successfully: ${studentSnapshot.data()}");
         setState(() {
           name.text = studentSnapshot['name'] ?? '';
           department.text = studentSnapshot['department'] ?? '';
@@ -53,6 +54,8 @@ class _StudentProfileState extends State<StudentProfile> {
           phone.text = studentSnapshot['phone'] ?? '';
           email.text = studentSnapshot['email'] ?? '';
         });
+      } else {
+        print("Student data does not exist for studentId: $_studentId");
       }
     } catch (e) {
       print('Error fetching student details: $e');

@@ -7,18 +7,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class StudentTile extends StatelessWidget {
   StudentTile({
     super.key,
-    // required this.img,
     required this.name,
+    required this.status,
     required this.department,
     required this.click,
     this.mode = false,
     required this.eventId,
     required this.studentId,
-    required String img,
   });
-  // final String img;
+
   String eventId;
   final String name;
+  final String status;
   final String department;
   final String studentId;
   final void Function() click;
@@ -48,7 +48,7 @@ class StudentTile extends StatelessWidget {
         leading: CircleAvatar(
           radius: 20,
           child: Image.asset(
-            '',
+            'assets/stu.png',
             fit: BoxFit.fill,
           ),
         ),

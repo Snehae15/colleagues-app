@@ -16,7 +16,7 @@ class TEventDetails extends StatelessWidget {
           padding: const EdgeInsets.only(left: 20).r,
           child: InkWell(
             onTap: () {
-              Navigator.pop(context); // back arrow Function...........
+              Navigator.pop(context);
             },
             child: const Icon(
               Icons.arrow_back_ios,
@@ -58,7 +58,7 @@ class TEventDetails extends StatelessWidget {
               mode: true,
               click: () {},
               eventId: '',
-              img: '',
+              status: '',
             ),
             itemCount: 2,
           )),

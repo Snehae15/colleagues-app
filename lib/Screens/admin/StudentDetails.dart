@@ -6,17 +6,30 @@ import 'package:college_app/widgets/DetailsCard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class StudentDetails extends StatelessWidget {
+class StudentDetails extends StatefulWidget {
   final String? requestId;
 
   const StudentDetails({Key? key, this.requestId}) : super(key: key);
+
+  @override
+  _StudentDetailsState createState() => _StudentDetailsState();
+}
+
+class _StudentDetailsState extends State<StudentDetails> {
+  late String status;
+
+  @override
+  void initState() {
+    super.initState();
+    status = '';
+  }
 
   Future<Map<String, dynamic>> fetchStudentAndEventData() async {
     try {
       DocumentSnapshot<Map<String, dynamic>> requestSnapshot =
           await FirebaseFirestore.instance
               .collection('EventRequests')
-              .doc(requestId)
+              .doc(widget.requestId)
               .get();
 
       if (!requestSnapshot.exists) {
@@ -60,7 +73,7 @@ class StudentDetails extends StatelessWidget {
       await FirebaseFirestore.instance.runTransaction((transaction) async {
         DocumentReference eventRequestRef = FirebaseFirestore.instance
             .collection('EventRequests')
-            .doc(requestId);
+            .doc(widget.requestId);
 
         DocumentSnapshot<Map<String, dynamic>> eventRequestSnapshot =
             await eventRequestRef.get()
@@ -75,11 +88,20 @@ class StudentDetails extends StatelessWidget {
 
         Map<String, dynamic> eventData = eventRequestSnapshot.data()!;
         eventData['status'] = 'accepted';
-        transaction.set(eventRef, eventData);
-        transaction.update(eventRequestRef, {
-          'status': 'accepted',
-          'eventId': eventRef.id,
-        });
+
+        // Check if the widget is still mounted before calling setState
+        if (mounted) {
+          transaction.set(eventRef, eventData);
+          transaction.update(eventRequestRef, {
+            'status': 'accepted',
+            'eventId': eventRef.id,
+          });
+
+          // Set the status to 'accepted'
+          setState(() {
+            status = 'accepted';
+          });
+        }
       });
     } catch (e) {
       print('Error accepting event request: $e');
@@ -92,20 +114,27 @@ class StudentDetails extends StatelessWidget {
       await FirebaseFirestore.instance.runTransaction((transaction) async {
         DocumentReference eventRequestRef = FirebaseFirestore.instance
             .collection('EventRequests')
-            .doc(requestId);
+            .doc(widget.requestId);
 
         DocumentSnapshot<Map<String, dynamic>> eventRequestSnapshot =
-            await eventRequestRef.get() as DocumentSnapshot<
-                Map<String, dynamic>>; // Explicitly specify the type
+            await eventRequestRef.get()
+                as DocumentSnapshot<Map<String, dynamic>>;
 
         if (!eventRequestSnapshot.exists) {
           throw Exception('Request data not found');
         }
 
-        transaction.update(eventRequestRef, {
-          'status':
-              'rejected', // Update status to 'rejected' in 'EventRequests'
-        });
+        // Check if the widget is still mounted before calling setState
+        if (mounted) {
+          transaction.update(eventRequestRef, {
+            'status': 'rejected',
+          });
+
+          // Set the status to 'rejected'
+          setState(() {
+            status = 'rejected';
+          });
+        }
       });
     } catch (e) {
       print('Error rejecting event request: $e');
@@ -148,9 +177,8 @@ class StudentDetails extends StatelessWidget {
               return Center(child: Text('Error: ${snapshot.error}'));
             } else {
               final combinedData = snapshot.data!;
-              final eventData = combinedData; // Extract event data
+              final eventData = combinedData;
               final studentData = combinedData['studentData'];
-              print(studentData);
 
               return SingleChildScrollView(
                 child: Column(
@@ -182,13 +210,18 @@ class StudentDetails extends StatelessWidget {
                       time: eventData['time'] ?? '',
                       place: eventData['location'] ?? '',
                     ),
-                    SizedBox(height: 40.h),
-                    AppText(
-                      text: eventData['description'] ?? '',
-                      size: 14,
-                      fontWeight: FontWeight.w400,
-                      color: customBlack,
+                    const Align(
+                      alignment: Alignment.bottomLeft,
+                      child: AppText(
+                          text: "Description :",
+                          size: 14,
+                          fontWeight: FontWeight.w400,
+                          color: customBlack),
                     ),
+                    SizedBox(
+                      height: 10.h,
+                    ),
+                    SizedBox(height: 40.h),
                     SizedBox(height: 10.h),
                     AppText(
                       text: studentData['description'] ?? '',
@@ -205,7 +238,6 @@ class StudentDetails extends StatelessWidget {
                             btnname: "Accept",
                             click: () {
                               acceptEventRequest();
-                              // Implement accept functionality
                             },
                           ),
                         ),
@@ -215,11 +247,23 @@ class StudentDetails extends StatelessWidget {
                             btnname: "Reject",
                             click: () {
                               rejectEventRequest();
-                              // Implement reject functionality
                             },
                           ),
                         ),
                       ],
+                    ),
+                    SizedBox(height: 20.h),
+                    Center(
+                      child: status.isNotEmpty
+                          ? AppText(
+                              text: 'Status: $status',
+                              size: 14.sp,
+                              fontWeight: FontWeight.w500,
+                              color: status == 'accepted'
+                                  ? Colors.green
+                                  : Colors.red,
+                            )
+                          : SizedBox.shrink(),
                     ),
                   ],
                 ),

@@ -137,7 +137,7 @@ class _EventRegistrationState extends State<EventRegistration> {
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No participants registered yet'));
+                  return Center(child: Text('No participants in this event'));
                 } else {
                   return ListView.builder(
                     itemCount: snapshot.data!.length,
@@ -150,7 +150,7 @@ class _EventRegistrationState extends State<EventRegistration> {
                         department: studentData['department'] ?? "Department",
                         studentId: '',
                         click: () {},
-                        eventId: '', img: '',
+                        eventId: '', status: '',
                       );
                     },
                   );

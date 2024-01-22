@@ -104,7 +104,7 @@ class EventList extends StatelessWidget {
   }
 }
 
-// Upcoming RequstList .................
+// Upcoming Request List .................
 class RequstList extends StatelessWidget {
   const RequstList({Key? key});
 

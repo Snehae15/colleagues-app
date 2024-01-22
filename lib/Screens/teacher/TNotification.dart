@@ -81,6 +81,7 @@ class NotificationCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListTile(
+        tileColor: Color.fromARGB(255, 210, 228, 240),
         title: Text(heading),
         subtitle: Text(contents),
       ),

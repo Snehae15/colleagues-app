@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:college_app/constants/colors.dart';
+import 'package:college_app/landingpage.dart';
 import 'package:college_app/widgets/AppText.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -27,6 +28,20 @@ class StudentNotification extends StatelessWidget {
           fontWeight: FontWeight.w500,
           color: customBlack,
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: IconButton(
+              icon: Icon(
+                Icons.logout,
+                color: customBlack,
+              ),
+              onPressed: () {
+                _logout(context); // Call _logout function on tap
+              },
+            ),
+          ),
+        ],
         centerTitle: true,
       ),
       body: Padding(
@@ -62,6 +77,14 @@ class StudentNotification extends StatelessWidget {
           ),
         ]),
       ),
+    );
+  }
+
+  void _logout(BuildContext context) {
+    // Navigate to LandingPage on logout
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LandingPage()),
     );
   }
 }

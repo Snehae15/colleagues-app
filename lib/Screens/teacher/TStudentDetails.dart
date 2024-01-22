@@ -23,13 +23,14 @@ class _TStudentDetailsState extends State<TStudentDetails> {
     super.initState();
     _studentDataFuture = fetchStudentData();
   }
- Future<void> updateStudentStatus(String status) async {
+
+  Future<void> updateStudentStatus(String status) async {
     try {
       await FirebaseFirestore.instance
           .collection('students')
           .doc(widget.studentId)
           .update({'status': status});
-      
+
       // After updating, refresh the displayed data
       setState(() {
         _studentDataFuture = fetchStudentData();
@@ -42,7 +43,10 @@ class _TStudentDetailsState extends State<TStudentDetails> {
   Future<Map<String, dynamic>> fetchStudentData() async {
     try {
       DocumentSnapshot<Map<String, dynamic>> studentSnapshot =
-          await FirebaseFirestore.instance.collection('students').doc(widget.studentId).get();
+          await FirebaseFirestore.instance
+              .collection('students')
+              .doc(widget.studentId)
+              .get();
 
       return studentSnapshot.data() ?? {};
     } catch (e) {
@@ -55,8 +59,8 @@ class _TStudentDetailsState extends State<TStudentDetails> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // Your app bar code remains unchanged...
-      ),
+          // Your app bar code remains unchanged...
+          ),
       body: Padding(
         padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20).r,
         child: FutureBuilder<Map<String, dynamic>>(
@@ -68,8 +72,8 @@ class _TStudentDetailsState extends State<TStudentDetails> {
               return Center(child: Text('Error: ${snapshot.error}'));
             } else {
               Map<String, dynamic> studentData = snapshot.data ?? {};
+              String status = studentData['status'] ?? '';
 
-              // Use the studentData to display details in your design
               return Stack(
                 children: [
                   SingleChildScrollView(
@@ -80,7 +84,8 @@ class _TStudentDetailsState extends State<TStudentDetails> {
                           child: CircleAvatar(
                             radius: 50.r,
                             backgroundColor: customWhite,
-                            backgroundImage: const AssetImage("assets/user.png"),
+                            backgroundImage:
+                                const AssetImage("assets/user.png"),
                           ),
                         ),
                         Padding(
@@ -94,14 +99,17 @@ class _TStudentDetailsState extends State<TStudentDetails> {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(
-                                  left: 50, right: 30, top: 40, bottom: 80)
-                              .r,
+                            left: 50,
+                            right: 30,
+                            top: 40,
+                            bottom: 80,
+                          ).r,
                           child: StudDet(
                             regno: studentData['registerno'] ?? '',
                             dipartment: studentData['department'] ?? '',
                             phone: studentData['phone'] ?? '',
                             email: studentData['email'] ?? '',
-                            status: studentData['status'] ?? '',
+                            status: status,
                           ),
                         ),
                       ],
@@ -112,11 +120,24 @@ class _TStudentDetailsState extends State<TStudentDetails> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: CustomButton(btnname: "Accept", click: () {updateStudentStatus('accepted');}),
+                          child: CustomButton(
+                            btnname:
+                                status == 'accepted' ? 'Registered' : 'Accept',
+                            click: () {
+                              if (status != 'accepted') {
+                                updateStudentStatus('accepted');
+                              }
+                            },
+                          ),
                         ),
                         SizedBox(width: 20.w),
                         Expanded(
-                          child: CustomButton(btnname: "Reject", click: () {updateStudentStatus('rejected');}),
+                          child: CustomButton(
+                            btnname: 'Reject',
+                            click: () {
+                              updateStudentStatus('rejected');
+                            },
+                          ),
                         ),
                       ],
                     ),

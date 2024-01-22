@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:college_app/Screens/teacher/TAddEvent.dart';
+import 'package:college_app/Screens/teacher/TEventPhoto.dart';
 import 'package:college_app/constants/colors.dart';
 import 'package:college_app/widgets/EventTile.dart';
 import 'package:flutter/material.dart';
@@ -42,13 +43,14 @@ Future<List<Map<String, dynamic>>> previousEvent() async {
 
   List<Map<String, dynamic>> events = querySnapshot.docs.map((doc) {
     Map<String, dynamic> eventData = doc.data() ?? {};
-    eventData['eventId'] = doc.id; // Add the document ID to the data
+    eventData['eventId'] = doc.id;
     return eventData;
   }).toList();
   print('$events....previous events');
   return events;
 }
 
+//event tab------------------------------
 class TEvent extends StatelessWidget {
   const TEvent({super.key});
 
@@ -110,7 +112,7 @@ class TEvent extends StatelessWidget {
   }
 }
 
-//Upcoming EventList .................class UpEventList extends StatelessWidget {
+// Upcoming Event List .................
 class UpEventList extends StatelessWidget {
   const UpEventList({Key? key});
 
@@ -129,25 +131,32 @@ class UpEventList extends StatelessWidget {
           return ListView.builder(
             itemCount: events.length,
             itemBuilder: (context, index) {
-              return Column(
-                children: [
-                  ListTile(
-                    tileColor: maincolor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    title: Text(
-                      events[index]['eventName'] ?? 'Event Name Missing',
-                      style: TextStyle(color: customWhite),
-                    ),
-                    onTap: () {
-                      // Handle tap for each event
-                      // Example: Navigator.push to event details page
-                    },
-                  ),
-                  SizedBox(height: 8), // Adjust the height as needed
-                ],
-              );
+              final eventId = events[index]['eventId'];
+              return events[index]['eventName'] != null
+                  ? Column(
+                      children: [
+                        ListTile(
+                          tileColor: maincolor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          title: Text(
+                            events[index]['eventName'],
+                            style: TextStyle(color: customWhite),
+                          ),
+                          onTap: () {
+                            print('selected eventId: $eventId');
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        TEventPhoto(eventId: eventId)));
+                          },
+                        ),
+                        SizedBox(height: 8), // Adjust the height as needed
+                      ],
+                    )
+                  : SizedBox.shrink();
             },
           );
         } else {
@@ -186,10 +195,10 @@ class PreviousList extends StatelessWidget {
               return EventTile(
                 title: eventName ?? 'Event Name Missing',
                 click: () {
-                  // Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //         builder: (context) => TEventPhoto(eventId: eventId)));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => TEventPhoto(eventId: eventId)));
                 },
               );
             },

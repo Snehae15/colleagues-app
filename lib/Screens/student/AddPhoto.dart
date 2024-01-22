@@ -135,7 +135,7 @@ class _AddPhotoState extends State<AddPhoto> {
     try {
       final Reference storageReference = FirebaseStorage.instance
           .ref()
-          .child('event_images/${widget.eventId}/${DateTime.now().toString()}');
+          .child('events/${widget.eventId}/${DateTime.now().toString()}');
 
       final UploadTask uploadTask = storageReference.putFile(image);
       final TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() {});
@@ -151,10 +151,10 @@ class _AddPhotoState extends State<AddPhoto> {
   Future<void> addImageToFirestore(String imageUrl) async {
     try {
       await FirebaseFirestore.instance
-          .collection('events')
-          .doc(widget.eventId)
-          .collection('event_photos')
+          .collection(
+              'event_photos') // Change this collection name to your desired one
           .add({
+        'eventId': widget.eventId,
         'imageUrl': imageUrl,
         'description': description.text,
         'timestamp': FieldValue.serverTimestamp(),

@@ -55,7 +55,15 @@ class _TAddEventState extends State<TAddEvent> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String teacherId = prefs.getString('teacherId') ?? '';
 
-      await FirebaseFirestore.instance.collection('EventRequests').add({
+      // Generate a unique eventId
+      String eventId =
+          FirebaseFirestore.instance.collection('EventRequests').doc().id;
+
+      await FirebaseFirestore.instance
+          .collection('EventRequests')
+          .doc(eventId)
+          .set({
+        'eventId': eventId,
         'eventName': eventname.text,
         'date': date.text,
         'time': time.text,
@@ -63,7 +71,7 @@ class _TAddEventState extends State<TAddEvent> {
         'description': description.text,
         'teacherId': teacherId,
         'status': 'pending',
-        'student': false, // Set the default status as 'accepted'
+        'student': false,
       });
       // Data added successfully
       Navigator.pop(
@@ -117,10 +125,12 @@ class _TAddEventState extends State<TAddEvent> {
                   Padding(
                     padding: const EdgeInsets.only(top: 5, bottom: 15).r,
                     child: TextFormField(
-                      controller: eventname, // controller........
+                      controller: eventname,
                       decoration: InputDecoration(
                         contentPadding: EdgeInsets.symmetric(
-                            vertical: 15.h, horizontal: 15.w),
+                          vertical: 15.h,
+                          horizontal: 15.w,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(6).r,
                         ),
@@ -146,7 +156,9 @@ class _TAddEventState extends State<TAddEvent> {
                         controller: date,
                         decoration: InputDecoration(
                           contentPadding: EdgeInsets.symmetric(
-                              vertical: 15.h, horizontal: 15.w),
+                            vertical: 15.h,
+                            horizontal: 15.w,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6).r,
                           ),
@@ -170,10 +182,12 @@ class _TAddEventState extends State<TAddEvent> {
                     },
                     child: AbsorbPointer(
                       child: TextFormField(
-                        controller: time, // controller........
+                        controller: time,
                         decoration: InputDecoration(
                           contentPadding: EdgeInsets.symmetric(
-                              vertical: 15.h, horizontal: 15.w),
+                            vertical: 15.h,
+                            horizontal: 15.w,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(6).r,
                           ),
@@ -194,10 +208,12 @@ class _TAddEventState extends State<TAddEvent> {
                   Padding(
                     padding: const EdgeInsets.only(top: 5, bottom: 15).r,
                     child: TextFormField(
-                      controller: place, // controller........
+                      controller: place,
                       decoration: InputDecoration(
                         contentPadding: EdgeInsets.symmetric(
-                            vertical: 15.h, horizontal: 15.w),
+                          vertical: 15.h,
+                          horizontal: 15.w,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(6).r,
                         ),
@@ -217,7 +233,7 @@ class _TAddEventState extends State<TAddEvent> {
                   Padding(
                     padding: const EdgeInsets.only(top: 5).r,
                     child: TextFormField(
-                      controller: description, // controller........
+                      controller: description,
                       maxLines: 4,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(

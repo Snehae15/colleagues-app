@@ -9,16 +9,16 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 class EventDetails extends StatefulWidget {
   final String eventId;
-  const EventDetails(
-      {Key? key,
-      required this.eventId,
-      required String eventName,
-      required String date,
-      required String time,
-      required String location,
-      required String hostId,
-      required String hostName})
-      : super(key: key);
+  const EventDetails({
+    Key? key,
+    required this.eventId,
+    required String eventName,
+    required String hostId,
+    required String hostName,
+    required String date,
+    required String time,
+    required String location,
+  }) : super(key: key);
 
   @override
   State<EventDetails> createState() => _EventDetailsState();
@@ -62,8 +62,6 @@ class _EventDetailsState extends State<EventDetails> {
   Future<void> fetchTeacherData() async {
     try {
       String hostId = eventData!['hostId'];
-      print(hostId);
-
       QuerySnapshot teachersSnapshot = await FirebaseFirestore.instance
           .collection('teachers')
           .where(FieldPath.documentId, isEqualTo: hostId)
@@ -85,6 +83,10 @@ class _EventDetailsState extends State<EventDetails> {
 
   Future<void> fetchEventDetails() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
+
       DocumentSnapshot eventSnapshot = await FirebaseFirestore.instance
           .collection('events')
           .doc(widget.eventId)
@@ -98,13 +100,11 @@ class _EventDetailsState extends State<EventDetails> {
           print(eventData);
         });
       } else {
-        // Handle if the event with the provided eventId doesn't exist
         setState(() {
           isLoading = false;
         });
       }
     } catch (e) {
-      // Handle errors while fetching event details
       print('Error fetching event details: $e');
       setState(() {
         isLoading = false;
@@ -122,7 +122,6 @@ class _EventDetailsState extends State<EventDetails> {
           'hostId': selectedvalue,
         });
 
-        // Show toast
         Fluttertoast.showToast(
           msg: 'Host added successfully!',
           toastLength: Toast.LENGTH_SHORT,
@@ -133,7 +132,6 @@ class _EventDetailsState extends State<EventDetails> {
           fontSize: 16.0,
         );
 
-        // Reload the previous page
         Navigator.pop(context);
       } catch (e) {
         print('Error adding host to event: $e');
@@ -151,7 +149,7 @@ class _EventDetailsState extends State<EventDetails> {
           padding: const EdgeInsets.only(left: 20),
           child: InkWell(
             onTap: () {
-              Navigator.pop(context); // back arrow Function...........
+              Navigator.pop(context);
             },
             child: const Icon(
               Icons.arrow_back_ios,
@@ -169,105 +167,108 @@ class _EventDetailsState extends State<EventDetails> {
       ),
       body: Padding(
         padding: const EdgeInsets.only(left: 20, right: 20),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 20.h),
-              const Align(
-                alignment: Alignment.topCenter,
-                child: AppText(
-                  text: "Food Festival",
-                  size: 15,
-                  fontWeight: FontWeight.w500,
-                  color: maincolor,
+        child: isLoading
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 20.h),
+                    const Align(
+                      alignment: Alignment.topCenter,
+                      child: AppText(
+                        text: "EVENTS",
+                        size: 15,
+                        fontWeight: FontWeight.w500,
+                        color: maincolor,
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 40.w, vertical: 40.h),
+                      child: EventDet(
+                        name: eventData!['eventName'],
+                        description: eventData!['description'],
+                        date: eventData!['date'],
+                        time: eventData!['time'],
+                        status: eventData!['status'],
+                        location: eventData!['location'],
+                      ),
+                    ),
+                    const AppText(
+                      text: "Description",
+                      size: 15,
+                      fontWeight: FontWeight.w400,
+                      color: customBlack,
+                    ),
+                    SizedBox(height: 20.h),
+                    AppText(
+                      text: eventData!['description'],
+                      size: 12,
+                      fontWeight: FontWeight.w400,
+                      color: customBlack,
+                    ),
+                    SizedBox(height: 20.h),
+                    const AppText(
+                      text: "Host",
+                      size: 15,
+                      fontWeight: FontWeight.w500,
+                      color: maincolor,
+                    ),
+                    SizedBox(height: 10.h),
+                    StudentTile(
+                      name: teacherName,
+                      department: teacherDepartment,
+                      click: () {},
+                      eventId: '',
+                      studentId: '',
+                      status: '',
+                    ),
+                    SizedBox(height: 20.h),
+                    const AppText(
+                      text: "Add Host",
+                      size: 15,
+                      fontWeight: FontWeight.w500,
+                      color: maincolor,
+                    ),
+                    SizedBox(height: 10.h),
+                    Container(
+                      height: 50.h,
+                      color: Colors.grey[200],
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        elevation: 0,
+                        underline: const SizedBox(),
+                        value: selectedvalue,
+                        items: droplist.map<DropdownMenuItem<String>>(
+                          (teacher) {
+                            return DropdownMenuItem<String>(
+                              value: teacher['id'] as String,
+                              child: Text(teacher['name'] as String),
+                            );
+                          },
+                        ).toList(),
+                        onChanged: (newvalue) {
+                          setState(() {
+                            selectedvalue = newvalue;
+                          });
+                        },
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 15.w, vertical: 10.h),
+                      ),
+                    ),
+                    SizedBox(height: 40.h),
+                    SizedBox(height: 15.h),
+                    CustomButton(
+                      btnname: "Confirm",
+                      click: addHostToEvent,
+                    ),
+                    SizedBox(height: 20.h),
+                  ],
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 40.h),
-                child: EventDet(
-                  name: eventData!['eventName'],
-                  description: eventData!['description'],
-                  date: eventData!['date'],
-                  time: eventData!['time'],
-                  status: eventData!['status'],
-                  location: eventData!['location'],
-                ),
-              ),
-              const AppText(
-                text: "Description",
-                size: 15,
-                fontWeight: FontWeight.w400,
-                color: customBlack,
-              ),
-              SizedBox(height: 20.h),
-              AppText(
-                text: eventData!['description'],
-                size: 12,
-                fontWeight: FontWeight.w400,
-                color: customBlack,
-              ),
-              SizedBox(height: 20.h),
-              const AppText(
-                text: "Host",
-                size: 15,
-                fontWeight: FontWeight.w500,
-                color: maincolor,
-              ),
-              SizedBox(height: 10.h),
-              StudentTile(
-                // img: "assets/teac.png",
-                name: teacherName,
-                department: teacherDepartment,
-                click: () {},
-                eventId: '',
-                studentId: '', img: '',
-              ),
-              SizedBox(height: 20.h),
-              const AppText(
-                text: "Add Host",
-                size: 15,
-                fontWeight: FontWeight.w500,
-                color: maincolor,
-              ),
-              SizedBox(height: 10.h),
-              Container(
-                height: 50.h,
-                color: Colors.grey[200],
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  elevation: 0,
-                  underline: const SizedBox(),
-                  value: selectedvalue,
-                  items: droplist.map<DropdownMenuItem<String>>((teacher) {
-                    return DropdownMenuItem<String>(
-                      value: teacher['id'] as String,
-                      child: Text(teacher['name'] as String),
-                    );
-                  }).toList(),
-                  onChanged: (newvalue) {
-                    setState(() {
-                      selectedvalue = newvalue;
-                    });
-                  },
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
-                ),
-              ),
-              SizedBox(height: 40.h),
-              // CustomButton(
-              //   btnname: "Add Host",
-              //   click: addHostToEvent,
-              // ),
-              SizedBox(height: 15.h),
-              CustomButton(
-                btnname: "Confirm",
-                click: addHostToEvent,
-              ),
-              SizedBox(height: 20.h),
-            ],
-          ),
-        ),
       ),
     );
   }

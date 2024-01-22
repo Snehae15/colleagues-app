@@ -4,7 +4,6 @@ import 'package:college_app/Screens/teacher/TNotification.dart';
 import 'package:college_app/Screens/teacher/TStudentDetails.dart';
 import 'package:college_app/Screens/teacher/Tprofile.dart';
 import 'package:college_app/constants/colors.dart';
-import 'package:college_app/widgets/StudentTile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -55,6 +54,8 @@ class THome extends StatelessWidget {
   }
 }
 
+//students tab-----------------------
+
 class StudentList extends StatelessWidget {
   const StudentList({Key? key});
 
@@ -67,7 +68,7 @@ class StudentList extends StatelessWidget {
 
       studentsQuery.docs.forEach((doc) {
         Map<String, dynamic> student = doc.data();
-        student['id'] = doc.id; // Include the document ID in the student data
+        student['id'] = doc.id;
         studentsData.add(student);
       });
 
@@ -132,9 +133,7 @@ class StudentList extends StatelessWidget {
                 var studentData = snapshot.data![index];
                 print('Student ID: ${studentData['id']}');
                 return StudentTile(
-                  // img: studentData['img'] ?? "assets/user.png",
                   name: studentData['name'] ?? "Name not available",
-                  eventId: '',
                   studentId: '',
                   department:
                       studentData['department'] ?? "Department not available",
@@ -147,7 +146,7 @@ class StudentList extends StatelessWidget {
                       ),
                     );
                   },
-                  img: '',
+                  status: studentData['status'] ?? "Status not available",
                 );
               },
             );
@@ -155,5 +154,79 @@ class StudentList extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+// StudentTile.dart
+class StudentTile extends StatelessWidget {
+  final String name;
+  final String department;
+  final String studentId;
+  final String status;
+  final void Function() click;
+
+  StudentTile({
+    required this.name,
+    required this.department,
+    required this.studentId,
+    required this.status,
+    required this.click,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10).r,
+      child: ListTile(
+        tileColor: Color.fromARGB(255, 208, 219, 238),
+        contentPadding: EdgeInsets.zero,
+        leading: CircleAvatar(
+          radius: 20,
+          child: Image.asset(
+            'assets/stu.png',
+            fit: BoxFit.fill,
+          ),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  text: name,
+                  size: 14,
+                  fontWeight: FontWeight.w400,
+                  color: customBlack,
+                ),
+                AppText(
+                  text: department,
+                  size: 12,
+                  fontWeight: FontWeight.w400,
+                  color: customBlack,
+                ),
+              ],
+            ),
+            Text(
+              "$status",
+              style: TextStyle(color: getStatusColor(status)),
+            ),
+          ],
+        ),
+        onTap: click,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6).r),
+      ),
+    );
+  }
+
+  Color getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'accepted':
+        return Colors.green;
+      case 'rejected':
+        return Colors.red;
+      default:
+        return Colors.black;
+    }
   }
 }
